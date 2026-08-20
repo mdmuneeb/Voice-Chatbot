@@ -1,37 +1,59 @@
+from pathlib import Path
 import subprocess
 import uuid
 
-from backend.app.core.config import (
-    PIPER_EXECUTABLE,
-    PIPER_MODEL,
-    AUDIO_DIR,
+
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+
+
+AUDIO_DIR = (
+    PROJECT_ROOT
+    / "backend"
+    / "audio"
 )
 
 
-def text_to_speech(text: str) -> str:
+PIPER_EXECUTABLE = (
+    PROJECT_ROOT
+    / ".venv"
+    / "Scripts"
+    / "piper.exe"
+)
+
+
+PIPER_MODEL = (
+    PROJECT_ROOT
+    / "backend"
+    / "models"
+    / "en_US-lessac-medium.onnx"
+)
+
+
+AUDIO_DIR.mkdir(
+    parents=True,
+    exist_ok=True
+)
+
+
+def text_to_speech(text: str):
 
     filename = f"{uuid.uuid4()}.wav"
 
-    output_file = AUDIO_DIR / filename
+    output_path = AUDIO_DIR / filename
 
     command = [
         str(PIPER_EXECUTABLE),
         "--model",
         str(PIPER_MODEL),
         "--output_file",
-        str(output_file),
+        str(output_path),
     ]
 
-    result = subprocess.run(
+    subprocess.run(
         command,
         input=text,
         text=True,
-        capture_output=True,
+        check=True,
     )
 
-    if result.returncode != 0:
-        raise RuntimeError(
-            f"Piper TTS failed: {result.stderr}"
-        )
-
-    return filename
+    return output_path

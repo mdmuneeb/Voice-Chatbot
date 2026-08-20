@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+langchain-groq
+piper-tts
+soundfile
+python-dotenv
+langchain-openai
+langchain
+langgraph
+langchain-community
+supabase

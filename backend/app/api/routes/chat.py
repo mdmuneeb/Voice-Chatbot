@@ -1,8 +1,14 @@
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import (
+    APIRouter,
+    HTTPException,
+)
 
-from backend.app.schemas.chat import ChatRequest, ChatResponse
-from backend.app.services.llm_service import generate_response
-from backend.app.services.tts_service import text_to_speech
+from backend.app.schemas.chat import (
+    ChatRequest,
+    ChatResponse,
+)
+
+from backend.app.graph.graph import graph
 
 
 router = APIRouter(
@@ -16,34 +22,37 @@ router = APIRouter(
     response_model=ChatResponse
 )
 async def chat(
-    request: ChatRequest,
-    http_request: Request
+    request: ChatRequest
 ):
 
     try:
 
-        # Step 1: LLM
-        response_text = generate_response(
-            request.message
-        )
+        result = graph.invoke({
 
-        # Step 2: Piper TTS
-        audio_filename = text_to_speech(
-            response_text
-        )
+            "thread_id":
+                request.thread_id,
 
-        # Step 3: Create audio URL
-        audio_url = (
-            str(http_request.base_url)
-            + f"audio/{audio_filename}"
-        )
+            "user_message":
+                request.message,
 
-        # Step 4: Return response
+        })
+
+
         return ChatResponse(
-            message=request.message,
-            response=response_text,
-            audio_file=audio_url,
+
+            thread_id=
+                request.thread_id,
+
+            message=
+                request.message,
+
+            response=
+                result["llm_response"],
+
+            audio_url=
+                result["audio_file"],
         )
+
 
     except Exception as e:
 

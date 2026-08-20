@@ -1,30 +1,11 @@
-from langchain_core.messages import SystemMessage, HumanMessage
-
-from backend.app.core.config import OPENROUTER_API_KEY
-from langchain_openai import ChatOpenAI
 import os
 
+from dotenv import load_dotenv
+from langchain_core.messages import SystemMessage, HumanMessage
+from langchain_openai import ChatOpenAI
 
-SYSTEM_PROMPT = """
-You are a voice chatbot.
 
-Your responses will be converted directly into speech using
-a text-to-speech system.
-
-Follow these rules:
-
-- Respond naturally, like a human speaking.
-- Do not use Markdown.
-- Do not use bullet points.
-- Do not use numbered lists.
-- Do not use headings.
-- Do not use asterisks.
-- Do not use emojis.
-- Do not use code blocks.
-- Avoid unnecessary formatting.
-- Keep responses concise and conversational.
-- Use simple spoken language.
-"""
+load_dotenv()
 
 
 llm = ChatOpenAI(
@@ -36,13 +17,38 @@ llm = ChatOpenAI(
 )
 
 
-def generate_response(user_message: str) -> str:
+SYSTEM_PROMPT = """
+You are a voice assistant.
+
+Your responses will be converted into speech using a text-to-speech system.
+
+Follow these rules:
+
+- Respond in simple, natural English.
+- Keep responses concise and conversational.
+- Do not use Markdown.
+- Do not use bullet points.
+- Do not use headings.
+- Do not use emojis.
+- Do not use unnecessary special characters.
+- Avoid long lists.
+- Write exactly what a person would naturally say aloud.
+- Prefer short and clear sentences.
+"""
+
+
+def generate_response(messages):
+
+    formatted_messages = [
+        SystemMessage(
+            content=SYSTEM_PROMPT
+        )
+    ]
+
+    formatted_messages.extend(messages)
 
     response = llm.invoke(
-        [
-            SystemMessage(content=SYSTEM_PROMPT),
-            HumanMessage(content=user_message),
-        ]
+        formatted_messages
     )
 
-    return response.content
+    return response.content.strip()
