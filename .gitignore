@@ -1,2 +1,4 @@
 .env
 .venv
+run_command
+__pycache__
